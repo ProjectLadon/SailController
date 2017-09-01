@@ -9,7 +9,7 @@
 #define FORE_INPUT    (A1)
 
 #define SERVO_OFFSET  (90)
-#define SERVO_RANGE   (15)
+#define SERVO_RANGE   (30)
 
 // IP Addresses
 IPAddress foresailIP(192,168,0,90);
@@ -23,9 +23,7 @@ int status = WL_IDLE_STATUS;
 char ssid[] = "Underworld";
 char password[] = "divedivedive";
 
-// Initialize the client library
-WiFiClient clientForesail;
-WiFiClient clientMizzen;
+
 
 // Neopixel
 //Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -58,6 +56,9 @@ void setup(void)
 
 void loop() {
 
+  WiFiClient clientForesail;
+  WiFiClient clientMizzen;
+
   // Read inputs
   int foreinput = map(analogRead(FORE_INPUT), 0, 1023, -SERVO_RANGE, SERVO_RANGE);
   int aftinput = map(analogRead(AFT_INPUT), 0, 1023, -SERVO_RANGE, SERVO_RANGE);
@@ -70,10 +71,18 @@ void loop() {
     int offset = aftinput;
     foreinput = base + offset;
     aftinput = base - offset;
-    if (foreinput > SERVO_RANGE) foreinput = SERVO_RANGE;
-    if (foreinput < -SERVO_RANGE) foreinput = -SERVO_RANGE;
-    if (aftinput > SERVO_RANGE) foreinput = SERVO_RANGE;
-    if (aftinput < -SERVO_RANGE) foreinput = -SERVO_RANGE;
+  }
+  if (foreinput > SERVO_RANGE) {
+    foreinput = SERVO_RANGE;
+  }
+  if (foreinput < -SERVO_RANGE) {
+    foreinput = -SERVO_RANGE;
+  }
+  if (aftinput > SERVO_RANGE) {
+    aftinput = SERVO_RANGE;
+  }
+  if (aftinput < -SERVO_RANGE) {
+    aftinput = -SERVO_RANGE;
   }
 
   // shift the data to center at 90 degrees
@@ -87,16 +96,22 @@ void loop() {
   }
   
   if (clientForesail.connect(foresailIP, 80) && clientMizzen.connect(mizzenIP, 80)) { // make sure we connect to both
-    clientForesail.print("GET /sail?params=0"); // for reasons completely opaque to me, aREST drops the first character, so we add a leading zero
+    clientForesail.print("GET /sail?param=0"); // for reasons completely opaque to me, aREST drops the first character, so we add a leading zero
     clientForesail.print(foreinput);
     clientForesail.println(" HTTP/1.1");
+    clientForesail.println("");
+    clientForesail.println("");
     clientForesail.println();
-    clientMizzen.print("GET /sail?params=");
+    clientMizzen.print("GET /sail?param=0");
     clientMizzen.print(aftinput);
     clientMizzen.println(" HTTP/1.1");
+    clientMizzen.println("");
+    clientMizzen.println("");
     clientMizzen.println();
   } else {
     if (Serial) Serial.println("Connection failed");
   }
-  delay(50);
+  clientMizzen.stop();
+  clientForesail.stop();
+  delay(500);
 }
