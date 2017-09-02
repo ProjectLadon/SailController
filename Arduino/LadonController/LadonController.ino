@@ -23,8 +23,6 @@ int status = WL_IDLE_STATUS;
 char ssid[] = "Underworld";
 char password[] = "divedivedive";
 
-
-
 // Neopixel
 //Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -96,22 +94,28 @@ void loop() {
   }
   
   if (clientForesail.connect(foresailIP, 80) && clientMizzen.connect(mizzenIP, 80)) { // make sure we connect to both
-    clientForesail.print("GET /sail?param=0"); // for reasons completely opaque to me, aREST drops the first character, so we add a leading zero
-    clientForesail.print(foreinput);
-    clientForesail.println(" HTTP/1.1");
-    clientForesail.println("");
-    clientForesail.println("");
-    clientForesail.println();
-    clientMizzen.print("GET /sail?param=0");
-    clientMizzen.print(aftinput);
-    clientMizzen.println(" HTTP/1.1");
-    clientMizzen.println("");
-    clientMizzen.println("");
-    clientMizzen.println();
+    String forebuf = "GET /sail?param=0" + String(foreinput);
+    forebuf += " HTTP/1.1\r\n\r\n";
+    if (Serial) Serial.println(forebuf);
+    String mizbuf = "GET /sail?param=0" + String(aftinput);
+    mizbuf += " HTTP/1.1\r\n\r\n";
+    if (Serial) Serial.println(mizbuf);
+    //clientForesail.print("GET /sail?param=0"); // for reasons completely opaque to me, aREST drops the first character, so we add a leading zero
+    //clientForesail.print(foreinput);
+    //clientForesail.println(" HTTP/1.1");
+    //clientForesail.println("");
+    //clientForesail.println("");
+    clientForesail.println(forebuf);
+    //clientMizzen.print("GET /sail?param=0");
+    //clientMizzen.print(aftinput);
+    //clientMizzen.println(" HTTP/1.1");
+    //clientMizzen.println("");
+    //clientMizzen.println("");
+    clientMizzen.println(mizbuf);
   } else {
     if (Serial) Serial.println("Connection failed");
   }
   clientMizzen.stop();
   clientForesail.stop();
-  delay(500);
+  delay(100);
 }
